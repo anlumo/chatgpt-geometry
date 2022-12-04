@@ -279,4 +279,43 @@ impl Polygon {
             y: y_sum / n,
         }
     }
+
+    pub fn convex_hull(&self) -> Polygon {
+        // Create a vector of all the points in the polygon.
+        let mut points: Vec<Point> = self.points.to_vec();
+
+        // Sort the points by x-coordinate.
+        points.sort_by(|point1, point2| point1.y.partial_cmp(&point2.y).unwrap());
+
+        // Create a vector to store the result points.
+        let mut result: Vec<Point> = Vec::new();
+
+        // Compute the lower hull.
+        for point in &points {
+            while result.len() >= 2
+                && (result[result.len() - 2] - result[result.len() - 1])
+                    .cross(*point - result[result.len() - 1])
+                    <= 0.0
+            {
+                result.pop();
+            }
+            result.push(*point);
+        }
+
+        // Compute the upper hull.
+        let n = result.len() + 1;
+        for point in points.iter().rev() {
+            while result.len() >= n
+                && (result[result.len() - 2] - result[result.len() - 1])
+                    .cross(*point - result[result.len() - 1])
+                    <= 0.0
+            {
+                result.pop();
+            }
+            result.push(*point);
+        }
+
+        // Return the result as a polygon.
+        Polygon { points: result }
+    }
 }
